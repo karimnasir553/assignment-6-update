@@ -1,0 +1,12 @@
+.containerADD{
+    padding:10px;
+    border: groove;
+    width:50%;
+    margin-left: 10%; 
+    border radius:4px;
+    
+}
+
+input{
+    display:block;
+}

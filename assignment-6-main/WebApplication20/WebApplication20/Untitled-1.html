@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<link rel="stylesheet" href="web_css.css">
+
+<script>  
+    $(document).ready(function () {  
+              bookList();
+              userList();
+    });  
+    function bookList(){
+        $.ajax({  
+            type: "GET",  
+            url: "https://localhost:5001/weatherforecast/getbooks",  
+            contentType: "application/json; charset=utf-8",  
+            dataType: "json",  
+            success: function (data) {  
+                //alert(JSON.stringify(data));                  
+                $("#DIV").html('');   
+                var DIV = '';  
+                $.each(data, function (i, item) {  
+                    var rows = "<tr>" +  
+                        "<td id='RegdNo'>" + item.bookID + "</td>" +  
+                        "<td id='Name'>" + item.bookName + "</td>" +  
+                        "<td id='bookcategory'>" + item.category + "</td>" +  
+                        "<td id='bookshelfNumber'>" + item.shelfNumber + "</td>" +  
+                        "<td id='AdmissionDate'>" + item.bookIssuedStatus+"</td>" +  
+                        "</tr>";  
+                    $('#Table').append(rows);  
+                }); //End of foreach Loop   
+                console.log(data);  
+            }, //End of AJAX Success function  
+  
+            failure: function (data) {  
+                alert(data.responseText);  
+            }, //End of AJAX failure function  
+            error: function (data) {  
+                alert(data.responseText);  
+            } //End of AJAX error function  
+  
+        });   
+
+
+    }
+
+    function userList(){
+        $.ajax({  
+            type: "GET",  
+            url: "https://localhost:5001/weatherforecast/getusers",  
+            contentType: "application/json; charset=utf-8",  
+            dataType: "json",  
+            success: function (data) {  
+                //alert(JSON.stringify(data));                  
+                $("#DIV").html('');   
+                var DIV = '';  
+                $.each(data, function (i, item) {  
+                    var rows = "<tr>" +  
+                        "<td id='RegdNo'>" + item.userID + "</td>" +  
+                        "<td id='Name'>" + item.userName + "</td>" +  
+                        "<td id='bookIssuedList'>" + item.bookIssuedList + "</td>" +                         
+                        "</tr>";  
+                    $('#TableUser').append(rows);  
+                }); //End of foreach Loop   
+                console.log(data);  
+            }, //End of AJAX Success function  
+  
+            failure: function (data) {  
+                alert(data.responseText);  
+            }, //End of AJAX failure function  
+            error: function (data) {  
+                alert(data.responseText);  
+            } //End of AJAX error function  
+  
+        });   
+
+
+    }
+
+    
+
+
+
+    var Book= {
+  bookID: 0,
+  bookName: "",
+  category: "",
+  shelfNumber: "",
+  bookIssuedStatus:"",
+  price:0,
+ 
+}
+
+
+    function updateClick() {
+  // Build product object from inputs
+  Book = new Object();
+  var category=String($("#category").val());
+  Book.bookName = $("#bookname").val();
+  Book.bookID = parseInt($("#bookID").val());
+  Book.shelfNumber = $("#shelfNumber").val();
+  
+  Book.category=category
+  Book.bookIssuedStatus = $("#bookIssuedStatus").val();
+  
+ 
+  
+  if ($("#updateButton").text().trim() == "Add") {
+    bookAdd(Book);
+  }
+}
+
+function updateBook() {
+  // Build product object from inputs
+  Book = new Object();
+  
+  
+  var bookID = parseInt($("#bookID").val()); 
+  if ($("#updateButton").text().trim() == "Add") {
+    bookUpdate(Book);
+  }
+}
+
+function findBook()
+{
+  var searchedbookID = $("#bookID").val(); 
+  $.ajax({
+        url: "https://localhost:5001/weatherforecast/bookNames" + id,
+        type: 'GET',
+        dataType: 'json',
+        success: function (Book) {
+            productToFields(Book);
+            
+            // Change Update Button Text
+            $("#updateButton").text("Update");
+        },
+        error: function (request, message, error) {
+            handleException(request, message, error);
+        }
+    });
+}
+function productToFields(product) {
+    $("#Name").val(Book.bookName);
+    $("#id").val(Book.bookID);
+    $("#categoryofbook").val(Book.category);
+    $("#bookStatus").val(Book.bookIssuedStatus);
+    
+}
+
+function bookUpdate(Book) {
+  $.ajax({
+    url: "/api/Product",
+    type: 'PUT',
+    contentType: 
+       "application/json;charset=utf-8",
+    data: JSON.stringify(Book),
+    success: function (Book) {
+      bookUpdateSuccess(Book);
+    },
+    error: function (request, message, error) {
+      handleException(request, message, error);
+    }
+  });
+}
+
+function bookUpdateSuccess(Book) {
+  bookUpdateInTable(Book);
+}
+
+function bookUpdateInTable(Book) {
+    // Find Product in <table>
+    var id=  Book.BookId ;
+    
+    // Add changed product to table
+    $(row).after(productBuildTableRow(product));
+    
+    // Remove original product
+    $(row).remove();
+     // Clear form fields
+    
+    // Change Update Button Text
+    
+}
+
+function bookAdd(Book) {
+    
+
+  
+    $.ajax({
+    url: "https://localhost:5001/weatherforecast/addBooks",
+    type: 'POST',
+    contentType: 
+       "application/json;charset=utf-8",
+    data: JSON.stringify(Book),
+    success: function (Book) {
+      productAddSuccess(Book);
+    },
+    error: function (request, message, error) {
+      handleException(request, message, error);
+    }
+  });
+}
+function productAddSuccess(Book) {
+  productAddBookRow(Book);
+  
+}
+function productAddBookRow(Book) {
+ // Check if <tbody> tag exists, add one if not
+  if ($("#Table tbody").length == 0) {
+   $("#Table").append("<tbody></tbody>");
+  }
+  // Append row to <table>
+  $("#Table tbody").append(
+    productBuildBookTableRow(Book));
+}
+
+function productBuildBookTableRow(Book) {
+  var ret = "<tr>" +  
+                        "<td id='RegdNo'>" + parseInt($("#bookID").val())   + "</td>" +  
+                        "<td id='Name'>" + $("#bookname").val() + "</td>" +  
+                        "<td id='bookcategory'>" + $("#category").val() + "</td>" +  
+                        "<td id='bookshelfNumber'>" + $("#shelfNumber").val() + "</td>" +  
+                        "<td id='AdmissionDate'>" + $("#bookIssuedStatus").val()+"</td>" +  
+                        "</tr>";
+
+                        return ret;
+}
+
+var User= {
+  userID: 0,
+  userName: "",
+ bookIssuedList:""
+ 
+}
+
+
+    function AdduserButton() {
+  // Build product object from inputs
+  User = new Object();
+  
+  User.userName = $("#username").val();
+  User.userID = parseInt($("#userID").val());
+  User.bookIssuedList = $("#bookIssuedList").val();
+  
+
+  
+ 
+  
+  if ($("#updateButton").text().trim() == "Add") {
+    userAdd(User);
+  }
+}
+
+function userAdd(User) {
+    
+
+  
+    $.ajax({
+    url: "https://localhost:5001/weatherforecast/addusers",
+    type: 'POST',
+    contentType: 
+       "application/json;charset=utf-8",
+    data: JSON.stringify(User),
+    success: function (User) {
+      USERAddSuccess(User);
+    },
+    error: function (request, message, error) {
+      handleException(request, message, error);
+    }
+  });
+}
+function USERAddSuccess(User) {
+  USERAddRow(User);
+  
+}
+function USERAddRow(User) {
+ // Check if <tbody> tag exists, add one if not
+  if ($("#Table tbody").length == 0) {
+   $("#Table").append("<tbody></tbody>");
+  }
+  // Append row to <table>
+  $("#Table tbody").append(
+    USERBuildTableRow(User));
+}
+
+function USERBuildTableRow(User) {
+  var ret = "<tr>" +  
+                        "<td id='userName'>" + User.userName   + "</td>" +  
+                        "<td id='userID'>" + User.userID + "</td>" +  
+                        "<td id='userbookIssuedList'>" + User.bookIssuedList + "</td>" +  
+                   
+                        "</tr>";
+
+                        return ret;
+}
+
+
+
+</script> 
+</head>
+<body>
+
+    <div class="panel panel-primary">  
+        <div class="panel-heading">  
+            Books
+        </div>   <!--en dof panel-heading -->
+        <div class="panel-body">  
+            <table class="table table-bordered" id="Table">  
+                <tr>  
+                    <th>Regd No</th>  
+                    <th>Name</th>  
+                    <th>bookcategory</th>  
+                    <th>bookshelfNumber</th>  
+                    <th>Admission Date</th>  
+                </tr>   <!--end of table-row -->
+            </table>   <!--end of table -->
+        </div> <!--end of Panel-body -->      
+    </div>
+
+    <div class="panel panel-primary">  
+      <div class="panel-heading">  
+          Users
+      </div>   <!--en dof panel-heading -->
+      <div class="panel-body">  
+          <table class="table table-bordered" id="TableUser">  
+              <tr>  
+                  <th>user ID</th>  
+                  <th>USERName</th>  
+                  <th>userbookIssuedList</th>   
+              </tr>   <!--end of table-row -->
+          </table>   <!--end of table -->
+      </div> <!--end of Panel-body -->      
+  </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+          <button type="button" 
+                  id="addButton" 
+                  class="btn btn-primary" 
+                  onclick="addClick();">Add Product</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              Product Information
+            </div>
+            <div class="panel-body">
+            </div>
+            <div class="panel-footer">
+            </div>
+         </div>
+        </div>
+      </div>
+     
+     
+
+      <div class="bookADD">
+        <div class="form-group">
+            <label for="productname">Book Name</label>
+            <input type="text" id="bookname" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label for="bookID">Book ID</label>
+            <input type="text" id="bookID" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label for="category">category</label>
+            <input type="text" id="category" class="form-control" />
+          </div>
+
+
+          <div class="form-group">
+            <label for="shelfNumber">shelf Number</label>
+            <input type="text" id="shelfNumber" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label for="bookIssuedStatus">bookIssuedStatus</label>
+            <input type="text" id="bookIssuedStatus" class="form-control" />
+          </div>
+          <div class="row">
+            <div class="col-xs-12">
+              <button type="button" 
+                      id="updateButton" 
+                      class="btn btn-primary" 
+                      onclick="updateClick();">
+                Add
+             </button>
+            </div>
+          </div>
+      </div>
+
+      <div class="userADD">
+        <div class="form-group">
+            <label for="productname">Users Name</label>
+            <input type="text" id="username" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label for="bookID">user ID</label>
+            <input type="text" id="userID" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label for="bookID">bookIssuedList</label>
+            <input type="text" id="bookIssuedList" class="form-control" />
+          </div>
+          <div class="row">
+            <div class="col-xs-12">
+              <button type="button" 
+                      id="updateButton" 
+                      class="btn btn-primary" 
+                      onclick="AdduserButton();">
+                Add
+             </button>
+            </div>
+          </div>
+      </div>
+
+      <div class="form-group">
+        <label for="seachBookID">update BOOK</label>
+        <input type="text" id="searchBookID" class="form-control" />
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <button type="button" 
+                  id="updateBooksButton" 
+                  class="btn btn-primary" 
+                  onclick="updateBook();">
+           Search
+         </button>
+        </div>
+      </div>
+
+      <div class="searchbook">
+        <div class="form-group">
+            <label for="productname">Book Name</label>
+            <input type="text" id="Name" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label for="bookID">Book ID</label>
+            <input type="text" id="id" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label for="category">category</label>
+            <input type="text" id="categoryofbook" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label for="bookIssuedStatus">bookIssuedStatus</label>
+            <input type="text" id="bookStatus" class="form-control" />
+          </div>
+
+      <input type="hidden" id="booknameid" value="0" />
+      
+
+</body>
+</html>
